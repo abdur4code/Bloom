@@ -68,6 +68,14 @@ export const authLoginController = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
+        res.cookie("refreshToken", refreshToken, {httpOnly: true});
+
+        res.status(200).json({
+            message: "Login Successfully",
+            data: {
+                accessToken
+            }
+        })
         
     } catch (error) {
         console.log("Error in login controller:", error);
