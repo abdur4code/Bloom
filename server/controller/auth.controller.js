@@ -1,6 +1,6 @@
 import UserModel from "../models/auth.model.js";
 import bcrypt from "bcryptjs";
-import { generateTokens } from "../utils/auth.js";
+import { generateTokens, verifyAccessToken, verifyRefreshToken } from "../utils/auth.js";
 
 
 /**
@@ -27,7 +27,7 @@ export const authRegisterController = async (req, res) => {
         res.status(201).json({
             message: "User registered successfully",
             data: {
-                user:{
+                user: {
                     name: user.name,
                     email: user.email
                 }
@@ -46,11 +46,11 @@ export const authRegisterController = async (req, res) => {
  */
 export const authLoginController = async (req, res) => {
     try {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
 
-        const user = await UserModel.findOne({email});
+        const user = await UserModel.findOne({ email });
 
-        if(!user){
+        if (!user) {
             return res.status(401).json({
                 error: "Invalid email or password"
             })
@@ -58,17 +58,17 @@ export const authLoginController = async (req, res) => {
 
         const isPasswordMatched = await bcrypt.compare(password, user.passwordHash);
 
-        if(!isPasswordMatched){
+        if (!isPasswordMatched) {
             return res.status(401).json({
                 error: "Invalid email or password"
             })
         }
 
-        const {accessToken, refreshToken} = generateTokens(user._id);
+        const { accessToken, refreshToken } = generateTokens(user._id);
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.cookie("refreshToken", refreshToken, {httpOnly: true});
+        res.cookie("refreshToken", refreshToken, { httpOnly: true });
 
         res.status(200).json({
             message: "Login Successfully",
@@ -76,11 +76,128 @@ export const authLoginController = async (req, res) => {
                 accessToken
             }
         })
-        
+
     } catch (error) {
         console.log("Error in login controller:", error);
         return res.status(500).json({
-            error:"Internal server error"
+            error: "Internal server error"
+        })
+    }
+}
+
+/**
+ * @GET /api/auth/me
+ */
+export const authMeController = async (req, res) => {
+    try {
+        const accessToken = req.headers.authorization?.split(" ")[1];
+        if (!accessToken) {
+            return res.status(401).json({
+                message: "Access token is missing",
+            });
+        }
+
+        const decoded = verifyAccessToken(accessToken);
+        const user = await UserModel.findById(decoded.id);
+
+        res.status(200).json({
+            message: "User fetched successfully",
+            data: {
+                user: {
+                    name: user.name,
+                    email: user.email,
+                },
+            },
+        });
+    } catch (error) {
+        console.log('Invalid or expired Access Token:', error);
+        return res.status(401).json({
+            message: "Invalid or expired Access Token"
+        })
+    }
+}
+
+
+/**
+ * @GET /api/auth/refresh
+ */
+export const authRefreshController = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                message: "Refresh token is missing",
+            });
+        }
+
+        const decoded = verifyRefreshToken(refreshToken);
+        if (!decoded) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            });
+        }
+
+        const user = await UserModel.findById(decoded.id);
+        if (!user || user.refreshToken !== refreshToken) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            });
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
+        user.refreshToken = newRefreshToken;
+        await user.save();
+
+        res.cookie("refreshToken", newRefreshToken, { httpOnly: true });
+
+        res.status(200).json({
+            message: "Tokens refreshed successfully",
+            data: {
+                accessToken,
+            },
+        });
+    } catch (error) {
+        console.log("Error in auth/refresh controller:", error);
+        res.status(500).json({
+            message: "Internal server error",
+        })
+    }
+}
+
+/**
+ * @POST /api/auth/logout
+ */
+export const authLogoutController = async (req, res) => {
+    try {
+        const accessToken = req.headers.authorization?.split(" ")[1];
+        if (!accessToken) {
+            return res.status(401).json({
+                message: "Access token is missing",
+            });
+        }
+
+        const decoded = verifyAccessToken(accessToken);
+        const user = await UserModel.findById(decoded.id);
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid access token",
+            });
+        }
+
+        user.refreshToken = null;
+        await user.save();
+
+        res.clearCookie("refreshToken");
+
+        res.status(200).json({
+            message: "Logged out successfully",
+        });
+    } catch (error) {
+        console.log("Error in auth/logout controller:", error);
+        res.status(500).json({
+            message: "Internal server error",
         })
     }
 }
