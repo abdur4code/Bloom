@@ -95,15 +95,13 @@ export const authLoginController = async (req, res) => {
  */
 export const authMeController = async (req, res) => {
     try {
-        const accessToken = req.headers.authorization?.split(" ")[1];
-        if (!accessToken) {
+        if (!req.user) {
             return res.status(401).json({
-                message: "Access token is missing",
+                message: "User not authenticated",
             });
         }
 
-        const decoded = verifyAccessToken(accessToken);
-        const user = await UserModel.findById(decoded.id);
+        const user = req.user;
 
         res.status(200).json({
             message: "User fetched successfully",

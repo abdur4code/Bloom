@@ -5,6 +5,7 @@ import { authLoginController,
     authMeController, 
     authRefreshController, 
     authLogoutController } from "../controller/auth.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.post('/login', loginValidator, authLoginController);
 /**
  * @GET /api/auth/me
  */
-router.get('/me', authMeController);
+router.get('/me', authenticate, authMeController);
 
 /**
  * @POST /api/auth/refresh-token
