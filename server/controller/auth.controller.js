@@ -47,18 +47,19 @@ export const authRegisterController = async (req, res) => {
 export const authLoginController = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const user = await UserModel.findOne({ email });
 
         if (!user) {
+            console.log("Invalid email or password")
             return res.status(401).json({
                 error: "Invalid email or password"
             })
         }
 
-        const isPasswordMatched = await bcrypt.compare(password, user.passwordHash);
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
-        if (!isPasswordMatched) {
+        if (!isPasswordValid) {
+            console.log("Invalid email or password")
             return res.status(401).json({
                 error: "Invalid email or password"
             })
@@ -71,9 +72,13 @@ export const authLoginController = async (req, res) => {
         res.cookie("refreshToken", refreshToken, { httpOnly: true });
 
         res.status(200).json({
-            message: "Login Successfully",
+            message: "Login successful",
             data: {
-                accessToken
+                accessToken,
+                user: {
+                    name: user.name,
+                    email: user.email
+                }
             }
         })
 
@@ -119,7 +124,7 @@ export const authMeController = async (req, res) => {
 
 
 /**
- * @GET /api/auth/refresh
+ * @GET /api/auth/refresh-token
  */
 export const authRefreshController = async (req, res) => {
     try {

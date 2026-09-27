@@ -24,9 +24,9 @@ router.post('/login', loginValidator, authLoginController);
 router.get('/me', authMeController);
 
 /**
- * @POST /api/auth/refresh
+ * @POST /api/auth/refresh-token
  */
-router.post('/refresh', authRefreshController);
+router.post('/refresh-token', authRefreshController);
 
 /**
  * @POST /api/auth/logout
