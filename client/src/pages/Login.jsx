@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../services/axiosConfig';
 import { setUser } from '../store/authSlice';
 import { Mail, Lock } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/apiError';
 
 function Login() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ function Login() {
       toast.success('Login successful!');
       navigate('/');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+      const errorMessage = getApiErrorMessage(error, 'Login failed');
       setGeneralError(errorMessage);
       toast.error(errorMessage);
     }

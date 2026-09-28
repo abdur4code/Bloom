@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../services/axiosConfig';
 import ProductCard from '../components/ProductCard';
+import { getApiErrorMessage } from '../utils/apiError';
+import { toast } from 'react-toastify';
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -14,14 +16,30 @@ function Products() {
         const products = response.data.data?.products || response.data.products || response.data;
         setProducts(Array.isArray(products) ? products : []);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch products');
+        setError(getApiErrorMessage(err, 'Failed to fetch products'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
+    window.addEventListener('product-added', fetchProducts);
+    return () => window.removeEventListener('product-added', fetchProducts);
   }, []);
+
+  const handleDelete = async (productId) => {
+    if (!window.confirm('Delete this product?')) return;
+
+    try {
+      await axiosInstance.delete(`/products/${productId}`);
+      setProducts((currentProducts) =>
+        currentProducts.filter((product) => (product._id || product.id) !== productId)
+      );
+      toast.success('Product deleted successfully.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to delete product'));
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen py-12">
@@ -57,7 +75,11 @@ function Products() {
             {products.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product._id || product.id}
+                    product={product}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </div>
             ) : (

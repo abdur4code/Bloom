@@ -11,6 +11,11 @@ export const authenticate = async (req, res, next) => {
         }
 
         const decoded = verifyAccessToken(accessToken);
+        if (!decoded) {
+            return res.status(401).json({
+                message: "Invalid or expired Access Token"
+            });
+        }
         const user = await UserModel.findById(decoded.id);
 
         req.user = user;

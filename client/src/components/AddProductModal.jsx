@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import axiosInstance from '../services/axiosConfig';
 import { X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/apiError';
 
-function AddProductModal({ onClose }) {
+function AddProductModal({ onClose, onProductAdded }) {
   const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
       name: '',
@@ -51,10 +52,11 @@ function AddProductModal({ onClose }) {
       });
 
       toast.success('Product added successfully!');
+      onProductAdded?.();
       reset();
       onClose();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add product');
+      toast.error(getApiErrorMessage(error, 'Failed to add product'));
     }
   };
 

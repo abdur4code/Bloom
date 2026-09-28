@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Trash2 } from 'lucide-react';
 import { getImageUrl } from '../utils/image';
 
-function ProductCard({ product }) {
+function ProductCard({ product, onDelete }) {
+  const productId = product._id || product.id;
+
   return (
-    <Link to={`/products/${product.id}`}>
+    <Link to={`/products/${productId}`}>
       <div className="bg-white border border-zinc-200 rounded overflow-hidden hover:shadow-lg transition">
         {/* Image */}
         <div className="aspect-square bg-zinc-100 overflow-hidden">
@@ -49,6 +51,20 @@ function ProductCard({ product }) {
             <ShoppingCart size={18} />
             <span>Add to Cart</span>
           </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(productId);
+              }}
+              className="w-full mt-2 flex items-center justify-center gap-2 border border-red-200 text-red-700 py-2 rounded hover:bg-red-50 transition"
+            >
+              <Trash2 size={18} />
+              <span>Delete Product</span>
+            </button>
+          )}
         </div>
       </div>
     </Link>

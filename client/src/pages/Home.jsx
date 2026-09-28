@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { ArrowRight } from 'lucide-react';
 import axiosInstance from '../services/axiosConfig';
 import ProductCard from '../components/ProductCard';
+import { getApiErrorMessage } from '../utils/apiError';
 
 function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -18,13 +19,15 @@ function Home() {
         const products = response.data.data?.products || response.data.products || response.data;
         setFeaturedProducts(Array.isArray(products) ? products.slice(0, 4) : []);
       } catch (error) {
-        console.error('Failed to fetch products:', error);
+        console.error(getApiErrorMessage(error, 'Failed to fetch products'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchFeaturedProducts();
+    window.addEventListener('product-added', fetchFeaturedProducts);
+    return () => window.removeEventListener('product-added', fetchFeaturedProducts);
   }, []);
 
   return (
@@ -80,7 +83,7 @@ function Home() {
           ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product._id || product.id} product={product} />
               ))}
             </div>
           ) : (

@@ -6,6 +6,7 @@ import { Plus, LogOut, Home, Package, UserRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axiosInstance from '../services/axiosConfig';
 import AddProductModal from './AddProductModal';
+import { getApiErrorMessage } from '../utils/apiError';
 
 function Navbar() {
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +19,7 @@ function Navbar() {
       await axiosInstance.post('/auth/logout');
     } catch (error) {
       // Clear the local session even if the backend session is already invalid.
-      console.error('Logout request failed:', error);
+      console.error(getApiErrorMessage(error, 'Logout request failed'));
     } finally {
       dispatch(logout());
       toast.success('You have been logged out.');
@@ -101,7 +102,12 @@ function Navbar() {
       </nav>
 
       {/* Add Product Modal */}
-      {showModal && <AddProductModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <AddProductModal
+          onClose={() => setShowModal(false)}
+          onProductAdded={() => window.dispatchEvent(new Event('product-added'))}
+        />
+      )}
     </>
   );
 }

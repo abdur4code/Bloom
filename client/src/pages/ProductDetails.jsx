@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import axiosInstance from '../services/axiosConfig';
 import { getImageUrl } from '../utils/image';
+import { getApiErrorMessage } from '../utils/apiError';
 
 function ProductDetails() {
   const { id } = useParams();
@@ -17,7 +18,7 @@ function ProductDetails() {
         const response = await axiosInstance.get(`/products/${id}`);
         setProduct(response.data.data || response.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch product');
+        setError(getApiErrorMessage(err, 'Failed to fetch product'));
       } finally {
         setLoading(false);
       }
@@ -111,7 +112,7 @@ function ProductDetails() {
             <div className="space-y-3 pt-6 border-t border-zinc-200">
               <div className="flex justify-between">
                 <span className="text-zinc-600">Product ID</span>
-                <span className="font-medium text-zinc-900">{product.id}</span>
+                <span className="font-medium text-zinc-900">{product._id || product.id}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-600">Currency</span>

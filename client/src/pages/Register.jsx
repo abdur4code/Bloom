@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import axiosInstance from '../services/axiosConfig';
 import { Mail, Lock, User } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/apiError';
 
 function Register() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function Register() {
       toast.success('Registration successful! Please log in.');
       navigate('/login');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      const errorMessage = getApiErrorMessage(error, 'Registration failed');
       setGeneralError(errorMessage);
       toast.error(errorMessage);
     }

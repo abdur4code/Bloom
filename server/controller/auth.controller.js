@@ -1,6 +1,6 @@
 import UserModel from "../models/auth.model.js";
 import bcrypt from "bcryptjs";
-import { generateTokens, verifyAccessToken, verifyRefreshToken } from "../utils/auth.js";
+import { generateTokens, verifyRefreshToken } from "../utils/auth.js";
 
 
 /**
@@ -173,24 +173,14 @@ export const authRefreshController = async (req, res) => {
  */
 export const authLogoutController = async (req, res) => {
     try {
-        const accessToken = req.headers.authorization?.split(" ")[1];
-        if (!accessToken) {
-            return res.status(401).json({
-                message: "Access token is missing",
-            });
+        const refreshToken = req.cookies.refreshToken;
+        if (refreshToken) {
+            const user = await UserModel.findOne({ refreshToken });
+            if (user) {
+                user.refreshToken = null;
+                await user.save();
+            }
         }
-
-        const decoded = verifyAccessToken(accessToken);
-        const user = await UserModel.findById(decoded.id);
-
-        if (!user) {
-            return res.status(401).json({
-                message: "Invalid access token",
-            });
-        }
-
-        user.refreshToken = null;
-        await user.save();
 
         res.clearCookie("refreshToken");
 
