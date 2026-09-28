@@ -10,6 +10,7 @@ import { getApiErrorMessage } from '../utils/apiError';
 
 function Navbar() {
   const [showModal, setShowModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, accessToken } = useSelector((state) => state.auth);
@@ -64,20 +65,18 @@ function Navbar() {
                     <Plus size={20} />
                     <span>Add Product</span>
                   </button>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-sm text-zinc-700">
-                      <UserRound size={18} aria-hidden="true" />
-                      <span>{user.name}</span>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      aria-label="Log out"
-                      title="Log out"
-                      className="flex items-center gap-2 text-zinc-500 hover:text-red-600 transition"
-                    >
-                      <LogOut size={20} />
-                      <span className="hidden sm:inline">Logout</span>
+                  <div className="relative">
+                    <button onClick={() => setShowUserMenu((open) => !open)} aria-label="Open user menu" className="text-zinc-600 hover:text-zinc-900 transition">
+                      <UserRound size={22} />
                     </button>
+                    {showUserMenu && (
+                      <div className="absolute right-0 top-10 w-48 bg-white border border-zinc-200 rounded-lg shadow-lg p-3">
+                        <p className="px-2 py-2 text-sm font-medium text-zinc-900">{user.name}</p>
+                        <button onClick={handleLogout} className="w-full flex items-center gap-2 px-2 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-red-600 rounded">
+                          <LogOut size={18} /> Logout
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

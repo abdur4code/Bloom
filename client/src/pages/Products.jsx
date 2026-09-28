@@ -3,11 +3,16 @@ import axiosInstance from '../services/axiosConfig';
 import ProductCard from '../components/ProductCard';
 import { getApiErrorMessage } from '../utils/apiError';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+import EditProductModal from '../components/EditProductModal';
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const { user, accessToken } = useSelector((state) => state.auth);
+  const canManageProducts = Boolean(user && accessToken);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -39,6 +44,14 @@ function Products() {
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to delete product'));
     }
+  };
+
+  const handleProductUpdated = (updatedProduct) => {
+    setProducts((currentProducts) => currentProducts.map((product) =>
+      (product._id || product.id) === (updatedProduct._id || updatedProduct.id)
+        ? updatedProduct
+        : product
+    ));
   };
 
   return (
@@ -78,7 +91,8 @@ function Products() {
                   <ProductCard
                     key={product._id || product.id}
                     product={product}
-                    onDelete={handleDelete}
+                    onEdit={canManageProducts ? setEditingProduct : undefined}
+                    onDelete={canManageProducts ? handleDelete : undefined}
                   />
                 ))}
               </div>
@@ -94,6 +108,13 @@ function Products() {
           </>
         )}
       </div>
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onProductUpdated={handleProductUpdated}
+        />
+      )}
     </div>
   );
 }

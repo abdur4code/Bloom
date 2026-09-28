@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Trash2 } from 'lucide-react';
+import { ShoppingCart, Trash2, Pencil } from 'lucide-react';
 import { getImageUrl } from '../utils/image';
 
-function ProductCard({ product, onDelete }) {
+function ProductCard({ product, onEdit, onDelete }) {
   const productId = product._id || product.id;
 
   return (
@@ -51,6 +51,17 @@ function ProductCard({ product, onDelete }) {
             <ShoppingCart size={18} />
             <span>Add to Cart</span>
           </button>
+          {(onEdit || onDelete) && (
+            <div className="flex gap-2 mt-2">
+            {onEdit && (
+              <button type="button" onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onEdit(product);
+              }} className="flex-1 flex items-center justify-center gap-2 border border-zinc-300 text-zinc-700 py-2 rounded hover:bg-zinc-50 transition">
+                <Pencil size={18} /><span>Edit</span>
+              </button>
+            )}
           {onDelete && (
             <button
               type="button"
@@ -59,11 +70,13 @@ function ProductCard({ product, onDelete }) {
                 event.stopPropagation();
                 onDelete(productId);
               }}
-              className="w-full mt-2 flex items-center justify-center gap-2 border border-red-200 text-red-700 py-2 rounded hover:bg-red-50 transition"
+              className="flex-1 flex items-center justify-center gap-2 border border-red-200 text-red-700 py-2 rounded hover:bg-red-50 transition"
             >
               <Trash2 size={18} />
               <span>Delete Product</span>
             </button>
+          )}
+            </div>
           )}
         </div>
       </div>
