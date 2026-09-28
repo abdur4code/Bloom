@@ -1,7 +1,8 @@
 import ProductModel from '../models/product.model.js';
+import {imageKit} from "../config/imageKit.js";
 
 
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 /**
  * @POST /api/products
  */
@@ -11,7 +12,7 @@ export const createProductController = async (req, res) => {
         const imageInfo = { url: null, fileId: null };
 
         if (req.file) {
-            const uploadResponse = await imagekit.upload({
+            const uploadResponse = await imageKit.upload({
                 file: req.file.buffer,
                 fileName: `product_${Date.now()}_${req.file.originalname}`,
                 folder: '/bloom_products'
@@ -125,7 +126,7 @@ export const updateProductController = async (req, res) => {
         let updatedData = { ...req.body };
 
         if (req.file) {
-            const uploadResponse = await imagekit.upload({
+            const uploadResponse = await imageKit.upload({
                 file: req.file.buffer,
                 fileName: `product_${Date.now()}_${req.file.originalname}`,
                 folder: '/bloom_products'
@@ -140,7 +141,7 @@ export const updateProductController = async (req, res) => {
 
             if (existingProduct.image && existingProduct.image.fileId) {
                 try {
-                    await imagekit.deleteFile(existingProduct.image.fileId);
+                    await imageKit.deleteFile(existingProduct.image.fileId);
                 }
                 catch (deleteError) {
                     console.error("Error deleting old image from ImageKit:", deleteError);
@@ -185,7 +186,7 @@ export const deleteProductController = async (req, res) => {
 
         if (existingProduct.image && existingProduct.image.fileId) {
             try {
-                await imagekit.deleteFile(existingProduct.image.fileId);
+                await imageKit.deleteFile(existingProduct.image.fileId);
             }
             catch (deleteError) {
                 console.error("Error deleting image from ImageKit:", deleteError);
